@@ -96,7 +96,7 @@ Starter Kit는 저장소 루트에 `CMakeLists.txt`, `StudyGame` 실행 타깃, 
 ```powershell
 cmake -S . -B build
 cmake --build build --config Debug
-.uildin\Debug\StudyGame.exe
+.\build\bin\Debug\StudyGame.exe
 ```
 
 운영자는 실행에 필요한 리소스·동적 라이브러리를 출력 폴더에 함께 배치하도록 빌드 설정을 제공하고 배포 전에 새 폴더에서 구성·빌드·실행을 확인합니다. 참여자는 라이브러리 복사나 렌더러 초기화 대신 핵심 구현에 집중합니다. 소스·CMake 설정·의존성 버전·필요 리소스는 관리하고 `build/`, IDE 캐시와 컴파일 결과는 `.gitignore`로 제외합니다.
