@@ -21,7 +21,7 @@
 
 환경: **C++17 이상 / SFML 3 / Windows 2D 창**.
 
-**제공 상태:** 현재는 문서·`.gitignore`만 있습니다. 아래 Starter Kit 구성·인터페이스·경로는 제공 목표 명세이며 구현된 파일이 아닙니다. 실제 세션은 운영자가 핵심 로직이 비어 있는 실행 가능한 Starter Kit를 배포한 뒤 시작합니다. 참여자에게 주변 시스템 제작을 과제로 넘기지 않습니다.
+**제공 상태:** SFML 3.1.0 헤더·라이브러리·DLL과 기본 창·입력·시계·도형 표시를 구성했습니다. 현재는 정지된 초기 화면과 코어 호출 경계가 동작하는 기본 세팅입니다. `src/main.cpp`는 제공 기반, `src/GameCore.cpp`의 TODO는 참여자 구현 영역입니다. 점수 UI·승패 화면·전체 스냅샷 계약 등 아래의 완전한 Starter Kit 명세는 아직 모두 구현되지 않았습니다.
 
 ### 제공할 시스템과 참여자 구현 범위
 
@@ -30,12 +30,9 @@
 | 운영자 제공 | 창 생성·종료, 프레임 시계, 키 상태 읽기, 공·패들·점수 표시, 공통 시작·재시작 UI, CMake·SFML 의존성 설정 |
 | 참여자 구현 | 공·패들 위치 갱신, 벽·패들 충돌과 반사, 이탈 득점, 라운드·재시작 상태 |
 
-1. Visual Studio에 **C++를 사용한 데스크톱 개발**, Windows SDK, CMake 도구를 설치합니다. 사용할 컴파일러·SDK·CMake 버전은 Starter Kit 배포 시 고정합니다.
-2. 5절에 따라 Fork·복제한 제공 프로젝트를 열어 미완성 코어가 연결된 기본 화면부터 실행합니다. 콘솔·창 생성이나 프로젝트 파일을 처음부터 작성하지 않습니다.
-3. Starter Kit는 SFML 3의 검증한 정확한 버전과 C++17 이상을 CMake 설정에 고정하고 창·키 입력·시계·도형/스프라이트 렌더러를 포함합니다. 첫 구성에는 의존성 다운로드가 필요할 수 있습니다. SFML 2 예제 API를 혼용하지 않습니다.
-4. 제공 입력 스냅샷과 코어 호출 위치, 렌더링용 상태 구조를 확인합니다. 공통 기반은 Pong과 Space Invaders에서 재사용하며 참여자는 SFML 초기화·링크 설정을 직접 작성하지 않습니다.
-
-환경 참고: [SFML 공식 시작 안내](https://www.sfml-dev.org/tutorials/3.0/), [공식 CMake 프로젝트 템플릿](https://github.com/SFML/cmake-sfml-project).
+1. Visual Studio의 C++ 데스크톱 개발과 CMake 도구, Windows SDK를 설치합니다. Windows x64 / MSVC / C++17 구성이며 SFML 3.1.0 의존성은 저장소에 포함되어 다운로드하지 않습니다.
+2. Fork·복제한 저장소에서 아래 빌드 명령을 실행합니다. VS 개발자 PowerShell에서 cmake를 사용할 수 있어야 합니다.
+3. src/main.cpp의 입력 수집→코어 갱신→스냅샷 표시 흐름을 확인하고 src/GameCore.cpp의 TODO를 구현합니다. 창 초기화·SFML 링크 설정은 직접 작성하지 않습니다.
 
 ## 4. 기획안과 구현 목표
 
@@ -76,7 +73,7 @@
 
 ### Fork와 작업 브랜치
 
-1. 운영자가 Starter Kit를 배포한 원본 저장소를 Fork합니다. 현재 문서 전용 상태에서는 빌드할 대상이 없으므로, 프로젝트 제공 뒤 아래 절차를 진행합니다.
+1. 운영자가 Starter Kit를 배포한 원본 저장소를 Fork합니다. 현재 기본 세팅은 빌드 가능하며 핵심 게임 로직은 TODO로 남아 있습니다.
 2. PowerShell 명령의 `<...>` 전체를 실제 URL로 바꿉니다. 이미 복제했다면 clone·remote add는 반복하지 않습니다.
 
 ```powershell
@@ -91,12 +88,20 @@ git switch -c work/01 upstream/week/01-pong
 
 ### 빌드와 실행
 
-Starter Kit는 저장소 루트에 `CMakeLists.txt`, `StudyGame` 실행 타깃, 출력 경로 `build/bin/<구성>/`을 제공하도록 명세합니다. Windows의 **Developer PowerShell for VS**에서 다음을 실행합니다. 명령은 해당 설정이 배포된 이후에 사용할 예시이며 지금 실행 가능한 프로젝트가 있다는 뜻은 아닙니다.
+Windows x64 MSVC 개발 환경에서 저장소 루트를 기준으로 실행합니다.
 
 ```powershell
-cmake -S . -B build
+cmake -S . -B build -A x64
 cmake --build build --config Debug
 .\build\bin\Debug\StudyGame.exe
 ```
 
-운영자는 실행에 필요한 리소스·동적 라이브러리를 출력 폴더에 함께 배치하도록 빌드 설정을 제공하고 배포 전에 새 폴더에서 구성·빌드·실행을 확인합니다. 참여자는 라이브러리 복사나 렌더러 초기화 대신 핵심 구현에 집중합니다. 소스·CMake 설정·의존성 버전·필요 리소스는 관리하고 `build/`, IDE 캐시와 컴파일 결과는 `.gitignore`로 제외합니다.
+DLL은 빌드 후 실행 파일 옆으로 자동 복사됩니다. 기본 화면의 도형은 정지해 있으며, 이동·충돌·점수 로직은 참여자가 구현해야 합니다. Esc 또는 창 닫기는 제공됩니다. R 요청은 코어까지 전달되지만 Reset의 게임 상태 복원은 TODO입니다.
+
+기본 렌더링·라이브러리 로드 확인:
+
+```powershell
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+이 확인은 출력 폴더의 startup.png를 생성하며 게임 규칙의 정답 여부는 검사하지 않습니다. Release도 같은 구성에서 `--config Release`로 빌드할 수 있습니다. third_party의 배포 의존성은 보관하고 build 출력·IDE 캐시는 제외합니다.

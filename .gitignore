@@ -42,3 +42,7 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+
+# Checked-in runtime dependency binaries (not project build output)
+!third_party/SFML-3.1.0/lib/*.lib
+!third_party/SFML-3.1.0/bin/*.dll
