@@ -71,7 +71,9 @@ public:
     Object& operator=(const Object&) = default;
 
 protected:
-    explicit Object(unsigned id) : m_id(id) {}
+    explicit Object(unsigned id) : m_id(id)
+    {
+    }
 
 public:
     bool visible{true};
@@ -89,13 +91,22 @@ public:
     }
 
 public:
-    unsigned getId() const { return m_id; }
+    unsigned getId() const
+    {
+        return m_id;
+    }
 
 protected:
-    void setActive(bool active) { m_active = active; }
+    void setActive(bool active)
+    {
+        m_active = active;
+    }
 
 private:
-    bool hasId() const { return m_id != 0; }
+    bool hasId() const
+    {
+        return m_id != 0;
+    }
 };
 
 struct WindowSettings
@@ -170,4 +181,25 @@ struct PlayerKeyBindings
     SfKey down{};
     SfKey fire{};
 };
+```
+
+## 조건문·블록·예외 처리
+
+- 한 문장짜리 if도 조건과 본문을 같은 줄에 쓰지 않습니다. 본문은 다음 줄에 한 단계 들여 씁니다. else·else if도 동일하게 적용합니다.
+- 블록을 쓰는 경우 여는 중괄호와 닫는 중괄호는 각각 별도 줄에 둡니다. 블록 내용은 두 중괄호 사이 줄에 작성합니다. 함수·클래스·반복문·조건문·람다에 동일하게 적용하며 초기화 목록의 중괄호와는 구분합니다.
+- try/catch는 최대한 사용하지 않습니다. 일반 분기는 조건·반환값으로 처리하고, 자원은 RAII와 소유권·연산 순서로 관리합니다. 오류를 그대로 재던지는 목적의 catch나 중첩 catch는 피합니다.
+- 예외 복구·진단·최종 정리가 실제로 필요한 경계에서만 catch합니다. 초기화·실행 오류를 보고하고 Subsystem을 해제하는 엔진 경계의 catch는 유지합니다. catch를 줄이기 위해 오류 검증이나 실패 시 정리를 삭제하지 않습니다.
+
+```cpp
+if (!object)
+    return;
+
+if (object->isActive())
+{
+    object->tick(deltaTime);
+}
+else
+{
+    return;
+}
 ```
