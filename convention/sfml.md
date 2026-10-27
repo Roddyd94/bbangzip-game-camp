@@ -44,6 +44,7 @@ SFML의 함수·변수 명명 규칙을 유지합니다.
 - 두 번째 이후 접근 지정자 `public:`, `protected:`, `private:` **바로 앞에는 빈 줄 하나**를 둡니다.
 - 클래스·구조체 정의가 이어질 때 `};`와 다음 정의 사이에 **빈 줄 하나**를 둡니다.
 - 첫 접근 지정자는 앞에 `friend` 선언이 있는지도 함께 확인합니다.
+- `.cpp` 파일의 함수 정의와 다음 함수 정의 사이에는 **빈 줄 하나**를 둡니다. 생성자·소멸자·연산자·일반 함수 모두 적용하며, 한 줄로 작성한 정의도 동일합니다.
 
 ## 배치 예시
 
@@ -108,4 +109,18 @@ class WindowManager
 public:
     WindowManager() = default;
 };
+```
+
+### cpp 함수 정의 간격
+
+```cpp
+void Object::tick(float deltaTime)
+{
+    // ...
+}
+
+unsigned Object::getId() const
+{
+    return m_id;
+}
 ```
