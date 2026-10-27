@@ -39,9 +39,10 @@ SFML의 함수·변수 명명 규칙을 유지합니다.
 
 ## 빈 줄
 
-- 모든 접근 지정자 `public:`, `protected:`, `private:` **바로 앞에 빈 줄 하나**를 둡니다. 정의의 첫 접근 지정자 앞도 같습니다.
+- 클래스·구조체 정의의 **첫 접근 지정자 바로 앞에는 빈 줄을 두지 않습니다.** 여는 중괄호 다음 줄에 작성합니다.
+- 두 번째 이후 접근 지정자 `public:`, `protected:`, `private:` **바로 앞에는 빈 줄 하나**를 둡니다.
 - 클래스·구조체 정의가 이어질 때 `};`와 다음 정의 사이에 **빈 줄 하나**를 둡니다.
-- 아래 예시처럼 별도 주석이 필요하다면 접근 지정자 앞의 빈 줄 규칙을 유지합니다.
+- 접근 지정자의 종류와 무관하게 첫 번째인지 여부로 빈 줄을 구분합니다.
 
 ## 배치 예시
 
@@ -50,7 +51,6 @@ SFML의 함수·변수 명명 규칙을 유지합니다.
 ```cpp
 class Object
 {
-
 public:
     Object() = default;
     virtual ~Object() = default;
@@ -87,7 +87,6 @@ private:
 
 struct WindowSettings
 {
-
 public:
     unsigned width{800};
     unsigned height{600};
