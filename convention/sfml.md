@@ -155,3 +155,19 @@ public:
     void clear();
 };
 ```
+
+## 멤버 변수 선언과 SFML 키 별칭
+
+- 멤버 변수는 **한 줄에 한 개씩** 선언합니다. 같은 타입도 쉼표로 묶지 않습니다. 초기화 목록 안의 쉼표는 이 규칙의 대상이 아닙니다.
+- 키 타입은 `using SfKey = sf::Keyboard::Key;` 별칭으로 간결하게 표기합니다.
+
+```cpp
+using SfKey = sf::Keyboard::Key;
+
+struct PlayerKeyBindings
+{
+    SfKey up{};
+    SfKey down{};
+    SfKey fire{};
+};
+```
