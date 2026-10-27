@@ -65,21 +65,23 @@ SFML의 함수·변수 명명 규칙을 유지합니다.
 class Object
 {
 public:
-    Object() = default;
+    Object() : visible(1), m_active(1)
+    {
+    }
     virtual ~Object() = default;
     Object(const Object&) = default;
     Object& operator=(const Object&) = default;
 
 protected:
-    explicit Object(unsigned id) : m_id(id)
+    explicit Object(unsigned id) : visible(1), m_active(1), m_id(id)
     {
     }
 
 public:
-    bool visible{true};
+    uint8 visible : 1;
 
 protected:
-    bool m_active{true};
+    uint8 m_active : 1;
 
 private:
     unsigned m_id{0};
@@ -202,4 +204,28 @@ else
 {
     return;
 }
+```
+
+## 멤버 크기·패딩·플래그
+
+- 같은 데이터·접근 수준 구간 안에서는 정렬 요구(alignof)가 큰 타입을 먼저 배치하고, 같은 정렬 요구에서는 크기(sizeof)가 큰 타입을 우선합니다. 작은 멤버와 플래그는 뒤에 모읍니다.
+- 소멸 순서 등 수명 의존성이 필요한 경우 이를 우선하며 이유를 주석으로 남깁니다. 멤버는 선언 역순으로 소멸하므로 다른 멤버가 참조하는 소유자를 먼저 선언합니다.
+- 저장용 참·거짓 멤버는 bool 대신 `uint8`(unsigned char)의 1비트 필드로 선언합니다. 반환형·지역 변수의 bool까지 바꾸지는 않습니다.
+- `using uint8 = unsigned char;`는 `base/Types.hpp`에서 제공합니다. 비트필드도 한 줄에 하나씩 씁니다.
+- C++17에서는 비트필드를 생성자 초기화 목록에서 초기화합니다. 접근 제한자·멤버 종류의 기존 우선순위는 유지합니다.
+- 패딩 감소는 대상 빌드에서 sizeof·alignof로 확인합니다. 비트필드의 바이트 배치를 파일 형식으로 쓰지 않으며, 파일 직렬화는 명시적인 필드 값으로 처리합니다.
+
+```cpp
+#include "base/Types.hpp"
+
+struct PlayerInputState
+{
+    PlayerInputState() : up(0), down(0), fire(0)
+    {
+    }
+
+    uint8 up : 1;
+    uint8 down : 1;
+    uint8 fire : 1;
+};
 ```
