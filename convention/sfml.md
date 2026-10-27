@@ -35,9 +35,16 @@ SFML의 함수·변수 명명 규칙을 유지합니다.
 
 각 종류 안에서는 **public → protected → private** 순서로 배치합니다. 비어 있는 구간은 생략합니다. 종류가 바뀌면 접근 지정자를 다시 선언할 수 있습니다. 전체 클래스를 public 하나, protected 하나, private 하나로만 묶어 종류 순서를 깨뜨리지 않습니다.
 
-일반 멤버 함수는 각 접근 수준 안에서 **const 멤버 함수 → 비const 멤버 함수** 순으로 배치합니다. `public → protected → private` 순서는 유지하며 const 함수를 앞으로 모으려고 접근 수준을 섞지 않습니다.
+함수 배치의 우선순위는 **함수 종류 → 접근 제한자 → 템플릿 여부 → const 여부**입니다.
 
-여기서 const는 `getId() const`처럼 함수 선언 뒤에 붙는 한정자입니다. 반환형이나 매개변수의 const 여부를 뜻하지 않습니다. 같은 이름의 const·비const 오버로드도 const 버전을 먼저 둡니다. 정적 함수는 const 멤버 함수가 될 수 없으므로 비const 구간에 둡니다. `.cpp`의 멤버 함수 정의도 헤더의 선언 순서에 맞춥니다.
+1. 앞서 정한 종류 순서(생성·소멸·할당 → 데이터 → 나머지 연산자 → 일반 함수)를 유지합니다.
+2. 각 종류 안에서 `public → protected → private` 순서를 적용합니다.
+3. 같은 접근 수준 안에서는 **템플릿 멤버 함수 → 비템플릿 멤버 함수** 순서로 배치합니다.
+4. 각 템플릿·비템플릿 구간 안에서는 **const 멤버 함수 → 비const 멤버 함수** 순서로 배치합니다.
+
+따라서 같은 접근 수준의 일반 함수는 `템플릿 const → 템플릿 비const → 비템플릿 const → 비템플릿 비const` 순서입니다. 템플릿 비const 함수가 비템플릿 const 함수보다 먼저 옵니다. 템플릿·const 함수를 앞으로 모으려고 함수 종류나 접근 수준을 섞지 않습니다. 비어 있는 구간은 생략합니다.
+
+여기서 const는 `getId() const`처럼 함수 선언 뒤에 붙는 한정자입니다. 반환형이나 매개변수의 const 여부를 뜻하지 않습니다. 같은 템플릿 구간의 const·비const 오버로드도 const 버전을 먼저 둡니다. 정적 함수는 const 멤버 함수가 될 수 없으므로 해당 템플릿 여부의 비const 구간에 둡니다. `.cpp`의 멤버 함수 정의도 헤더의 선언 순서에 맞춥니다.
 
 `operator=`는 연산자이지만 3번이 아니라 1번에 둡니다. 명시적으로 `= default` 또는 `= delete`한 특별 멤버 함수도 같은 위치에 둡니다.
 
@@ -129,14 +136,18 @@ unsigned Object::getId() const
 }
 ```
 
-### const 함수 우선 배치
+### 템플릿·const 함수 우선 배치
 
-같은 public 구간에서 읽기 전용 함수를 앞에 두고 상태를 바꾸는 함수를 뒤에 둡니다.
+같은 public 구간에서 템플릿 여부를 먼저 구분한 뒤, 각 구간에서 const 함수를 앞에 둡니다.
 
 ```cpp
 class World
 {
 public:
+    template <typename T>
+    const T* findAs(unsigned id) const;
+    template <typename T>
+    T& spawn();
     unsigned getObjectCount() const;
     const Object* find(unsigned id) const;
     Object* find(unsigned id);
