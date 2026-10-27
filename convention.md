@@ -73,7 +73,7 @@ public:
     Object& operator=(const Object&) = default;
 
 protected:
-    explicit Object(unsigned id) : visible(1), m_active(1), m_id(id)
+    explicit Object(uint32 id) : visible(1), m_active(1), m_id(id)
     {
     }
 
@@ -84,7 +84,7 @@ protected:
     uint8 m_active : 1;
 
 private:
-    unsigned m_id{0};
+    uint32 m_id{0};
 
 public:
     bool operator==(const Object& other) const
@@ -93,7 +93,7 @@ public:
     }
 
 public:
-    unsigned getId() const
+    uint32 getId() const
     {
         return m_id;
     }
@@ -114,8 +114,8 @@ private:
 struct WindowSettings
 {
 public:
-    unsigned width{800};
-    unsigned height{600};
+    uint32 width{800};
+    uint32 height{600};
 };
 ```
 
@@ -143,7 +143,7 @@ void Object::tick(float deltaTime)
     // ...
 }
 
-unsigned Object::getId() const
+uint32 Object::getId() const
 {
     return m_id;
 }
@@ -158,12 +158,12 @@ class World
 {
 public:
     template <typename T>
-    const T* findAs(unsigned id) const;
+    const T* findAs(uint32 id) const;
     template <typename T>
     T& spawn();
-    unsigned getObjectCount() const;
-    const Object* find(unsigned id) const;
-    Object* find(unsigned id);
+    uint32 getObjectCount() const;
+    const Object* find(uint32 id) const;
+    Object* find(uint32 id);
     void tick(float deltaTime);
     void clear();
 };
@@ -229,3 +229,18 @@ struct PlayerInputState
     uint8 fire : 1;
 };
 ```
+
+## 정수 타입 별칭
+
+프로젝트 내부의 정수 선언과 캐스팅에는 `base/Types.hpp`의 고정 폭 별칭을 사용합니다.
+
+| 비트 수 | 부호 있음 | 부호 없음 |
+|---|---|---|
+| 8 | int8 | uint8 |
+| 16 | int16 | uint16 |
+| 32 | int32 | uint32 |
+| 64 | int64 | uint64 |
+
+- uint8은 unsigned char이며 나머지는 표준 고정 폭 정수 타입의 별칭입니다. 정의 지점에서는 표준 타입을 사용하고 실제 폭은 static_assert로 검증합니다.
+- 일반 정수·크기·좌표·ID의 의미와 필요한 범위에 맞는 폭을 선택합니다. 현재 Windows x64 구성의 컨테이너 인덱스와 개수에는 uint64를 사용합니다.
+- 참·거짓 반환값과 지역 조건은 bool을 유지하고, 저장용 플래그 멤버는 앞서 정한 uint8 비트필드를 사용합니다. 문자·문자열 타입과 외부 라이브러리 원본은 바꾸지 않습니다.
