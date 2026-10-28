@@ -248,8 +248,11 @@ struct PlayerInputState
 
 ## 전방 선언 namespace
 
-전방 선언만 포함하는 짧은 namespace는 불필요하게 줄을 나누지 않고 한 줄로 작성합니다. 일반 구현 블록의 중괄호 줄바꿈 규칙에서는 예외로 둡니다.
+namespace도 여는·닫는 중괄호를 각각 별도 줄에 둡니다. 여는 중괄호와 첫 선언 사이, 마지막 선언과 닫는 중괄호 사이에는 불필요한 빈 줄을 넣지 않습니다. 전방 선언만 있어도 한 줄로 축약하지 않습니다.
 
 ```cpp
-namespace sf { class RenderTarget; }
+namespace sf
+{
+    class RenderTarget;
+}
 ```
