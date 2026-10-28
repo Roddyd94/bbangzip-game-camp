@@ -1,6 +1,6 @@
 # SFML / C++ 코딩 컨벤션
 
-이 문서는 스터디에서 합의한 규칙을 기억날 때마다 추가·수정하는 문서입니다. Windows 콘솔 C++ 주차에도 공통 C++ 규칙을 동일하게 적용합니다.
+이 문서는 스터디에서 합의한 규칙과 직접 수정한 C++ 코드의 작성 방식을 정리합니다. Windows 콘솔 C++ 주차에도 공통 C++ 규칙을 동일하게 적용합니다. 규칙을 추가할 때는 목적과 작성 예시를 함께 기록합니다.
 
 ## 원본과 적용 방법
 
@@ -23,6 +23,117 @@ SFML의 함수·변수 명명 규칙을 유지합니다.
 생성자·소멸자와 연산자 함수는 C++ 문법에 따른 이름을 사용합니다. 이 명명 규칙은 함수·변수에 관한 것이며 클래스 이름의 표기 변경을 요구하지 않습니다.
 
 확인 근거: 포함된 SFML 3.1.0의 `SFML/System/Clock.hpp`는 `getElapsedTime()`과 비공개 멤버 `m_refPoint`를 사용합니다. SFML 라이브러리 원본은 수정하지 않습니다.
+
+## cpp 작성 방식
+
+### 처리 단계와 빈 줄
+
+함수 안에서는 서로 이어지는 작업을 한 묶음으로 작성하고, 역할이 바뀌는 지점에 빈 줄 하나를 둡니다.
+
+- 조회·준비, 유효성 검사, 실제 처리, 최종 반환을 구분합니다.
+- 조기 반환·continue·break 뒤에 다른 처리가 이어지면 빈 줄을 둡니다.
+- 같은 설정 객체의 필드를 연속으로 채우는 코드는 한 묶음으로 유지합니다.
+- 선언과 사용이 긴밀하게 이어지는 경우에는 붙여도 됩니다. 모든 문장 사이에 빈 줄을 넣지는 않습니다.
+- 함수 정의 사이에는 빈 줄 하나를 둡니다. 빈 줄에는 공백이나 탭을 넣지 않습니다.
+
+```cpp
+bool InputComponent::registerFloat(uint8 keyType, SfKey keyDec, SfKey keyInc)
+{
+    if (!validKey(keyDec)
+        || !validKey(keyInc))
+        return false;
+
+    Binding binding;
+    binding.type = ValueType::Float;
+    binding.keyDecX = keyDec;
+    binding.keyIncX = keyInc;
+
+    return m_bindings.emplace(keyType, binding).second;
+}
+```
+
+### 복합 조건 줄바꿈
+
+수정하는 조건문에 `&&` 또는 `||`로 연결된 조건이 있으면 각 조건을 별도 줄에 씁니다. 첫 조건은 if와 같은 줄에 두고, 이후 조건은 한 단계 들여 쓴 줄의 **앞에 연산자**를 둡니다. 조건이 짧더라도 같은 형식을 사용합니다. 여러 조건으로 값을 계산하는 대입식에도 같은 방식을 적용합니다.
+
+```cpp
+if (nullptr == collider
+    || !bounds.findIntersection(collider->getCollisionBounds()))
+    continue;
+
+if (first->isActive()
+    && second->isActive())
+    secondCollider->onCollision(*first);
+```
+
+### 조기 종료와 블록
+
+유효하지 않거나 처리 대상이 아닌 경우에는 먼저 return·continue·break로 빠져나옵니다. 정상 처리를 불필요하게 중첩하지 않습니다. 종료 문장이 하나면 중괄호를 생략할 수 있지만, 본문은 반드시 다음 줄에 씁니다. 여러 문장을 수행하거나 내부에 조건문이 있으면 블록을 명시합니다.
+
+```cpp
+for (const auto& object : world.objects())
+{
+    if (!object->isActive())
+        continue;
+
+    if (const auto* drawable = dynamic_cast<const IRenderable*>(object.get()))
+        drawable->render(target);
+}
+```
+
+### 디버깅하기 쉬운 지역 변수
+
+- 여러 조건으로 계산한 반환값은 `result` 같은 지역 변수로 빼서 중단점에서 확인할 수 있게 합니다. 단순 멤버 getter까지 기계적으로 분리하지 않습니다.
+- 조회한 Subsystem은 `windowManager`, `timeManager`처럼 역할이 드러나는 이름으로 받습니다.
+- auto는 초기화식에서 타입을 파악할 수 있을 때 사용합니다. 포인터는 `auto*`, 참조는 `auto&` 또는 `const auto&`로 표현합니다.
+- const 오버로드로 위임할 때는 const 객체 포인터를 지역 변수로 분리해 호출 대상을 확인할 수 있게 합니다.
+
+```cpp
+bool InputComponent::getBoolState(uint8 keyType) const
+{
+    const auto found = m_bindings.find(keyType);
+    auto result = found != m_bindings.end()
+        && found->second.type == ValueType::Bool
+        && found->second.state.x != 0.f;
+
+    return result;
+}
+```
+
+```cpp
+auto* windowManager = getSubsystem<WindowManager>();
+auto* timeManager = getSubsystem<TimeManager>();
+
+if (!windowManager
+    || !timeManager)
+    return false;
+```
+
+### null 검사
+
+캐스팅 결과처럼 포인터와 nullptr를 명시적으로 비교할 때는 수정된 CollisionManager 코드처럼 `nullptr == pointer` 순서를 사용합니다. 포인터의 존재 여부만 확인하는 `if (!pointer)`도 허용합니다. 두 표현이 실제 코드에 함께 있으므로 모든 null 검사를 한 표현으로 강제하지 않습니다.
+
+### 반환값 무시와 주석
+
+- 반환값이 필요 없는 일반 호출은 `m_clock.restart();`처럼 호출문만 씁니다. 의도 표시만을 위한 `(void)` 캐스트는 붙이지 않습니다. 반환값 사용을 요구하는 API의 진단이 발생하면 해당 계약을 확인하고 처리합니다.
+- 코드 그대로를 반복하는 주석이나 비어 있는 함수의 상태를 설명하는 주석은 생략합니다. 빈 생명주기 함수는 빈 블록으로 둡니다.
+- 구현 의도·제약·주의할 점이 필요한 곳에 주석을 씁니다. `src/todo/`의 과제 설명과 TODO는 한글로 작성하고 식별자·API 이름은 유지합니다.
+
+```cpp
+void TimeManager::reset()
+{
+    m_clock.restart();
+    m_deltaTime = 0.f;
+}
+
+void WindowManager::initialize()
+{
+}
+```
+
+### 들여쓰기와 기본 공백
+
+현재 cpp에는 탭과 공백 들여쓰기가 혼재합니다. 수정 범위에서는 해당 파일의 들여쓰기를 따르며, 문서 예시는 공백 네 칸으로 표시합니다. 혼재 자체를 새 규칙으로 삼거나 문서 변경을 이유로 전체 소스를 재정렬하지 않습니다. 대입 연산자 양옆과 인수 구분 쉼표 뒤에는 공백을 둡니다.
 
 ## 멤버 선언 순서
 
@@ -139,14 +250,14 @@ public:
 ### cpp 함수 정의 간격
 
 ```cpp
-void Object::tick(float deltaTime)
-{
-    // ...
-}
-
 uint32 Object::getId() const
 {
     return m_id;
+}
+
+void Object::tick(float deltaTime)
+{
+    // 이동과 상태를 갱신합니다.
 }
 ```
 
@@ -231,6 +342,12 @@ struct PlayerInputState
     uint8 fire : 1;
 };
 ```
+
+## 크기가 큰 소유 멤버
+
+World, 렌더 윈도우, SFML 셰이프, 입력 컴포넌트처럼 크기가 큰 객체를 단독 소유할 때는 `std::unique_ptr<T>`로 보관합니다. 작은 좌표·색상·설정값·MovementComponent는 값으로 유지합니다. GameRule처럼 기반 클래스로 파생 객체를 소유하는 경우에도 unique_ptr를 사용하고 기반 클래스에 virtual 소멸자를 둡니다.
+
+소유하지 않는 필수 World 연결은 `World&`로 표현합니다. 참조하는 객체보다 World가 오래 살아 있어야 하며, World와 Subsystem의 선언 순서도 이 수명 조건을 지킵니다. 이미 unique_ptr를 원소로 갖는 컨테이너는 직접 멤버로 유지합니다.
 
 ## 정수 타입 별칭
 

@@ -1,1 +1,4 @@
 .vs/
+
+# Local build and verification artifacts
+/build/
