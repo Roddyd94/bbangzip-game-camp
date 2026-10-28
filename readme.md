@@ -191,3 +191,31 @@ git switch -c work/01 upstream/week/01-pong
 ```
 
 결과는 `build/result/StudyGame.exe`와 같은 폴더의 SFML DLL·content/입니다. 배포할 때 이 폴더 전체를 사용합니다. 중간 파일은 build/project/에 보관하며, 실행하는 PowerShell의 현재 폴더와 무관하게 스크립트 위치를 기준으로 동작합니다. 빌드 실패 시 실패 코드를 반환하고 기존 result는 덮어쓰지 않습니다. 지정한 소스 목록은 필요한 todo 의존 소스를 모두 포함해야 합니다.
+
+#### ExecutionPolicy로 build.ps1 실행이 차단될 때
+
+`이 시스템에서 스크립트를 실행할 수 없으므로 ... build.ps1 파일을 로드할 수 없습니다` 또는 `PSSecurityException` 오류가 나면 저장소 루트에서 다음과 같이 실행합니다. 저장소의 build.ps1 내용을 확인한 뒤 사용합니다.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+```
+
+별도의 Windows PowerShell 프로세스에서 이번 빌드만 실행합니다. 사용자·컴퓨터의 영구 실행 정책을 바꾸지 않으며 일반적인 개인 PC에서는 관리자 권한이 필요하지 않습니다. Debug 빌드는 명령 끝에 `-Configuration Debug`를 붙입니다. PowerShell 7을 사용하려면 `powershell.exe` 대신 `pwsh`를 사용합니다.
+
+같은 터미널에서 반복해서 빌드하려면 현재 세션에만 RemoteSigned를 적용할 수도 있습니다.
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\build.ps1
+```
+
+Process 범위 설정은 현재 터미널을 닫으면 사라집니다. ZIP 등으로 받은 스크립트가 인터넷 다운로드 파일로 표시되어 서명 오류가 계속 나면, 파일 내용을 확인한 뒤 해당 파일만 차단 해제합니다.
+
+```powershell
+Unblock-File -LiteralPath .\build.ps1
+.\build.ps1
+```
+
+Unblock-File은 다운로드 표시를 제거하는 명령이며 실행 정책 자체를 변경하지 않습니다. 회사·학교의 그룹 정책이 우선 적용되면 위 방법으로도 실행이 제한될 수 있습니다. 이 경우 `Get-ExecutionPolicy -List`로 MachinePolicy·UserPolicy를 확인하고 관리자가 허용하는 환경에서 빌드합니다.
+
+참고: [Microsoft PowerShell 실행 정책 문서](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies).
