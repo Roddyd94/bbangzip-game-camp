@@ -1,4 +1,4 @@
-# Unity generated caches and output
+# Unity가 생성하는 캐시·로컬 설정·빌드 출력
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
@@ -8,11 +8,25 @@
 /[Uu]ser[Ss]ettings/
 /[Mm]emoryCaptures/
 /[Rr]ecordings/
+/[Oo]ut/
+/[Oo]ut.meta
+/[Bb]uild.meta
+/[Bb]uilds.meta
+/[Mm]emoryCaptures.meta
+/[Rr]ecordings.meta
+/[Uu]nity[Rr]ecordings/
+/[Uu]nity[Rr]ecordings.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+sysinfo.txt
+*.stackdump
+*.log
 
-# Generated IDE projects and local state
+# IDE 생성 파일과 개인 작업 상태
 .vs/
 .idea/
 *.csproj
+*.unityproj
 *.sln
 *.slnx
 *.user
@@ -30,7 +44,7 @@
 *.pdb.meta
 *.mdb.meta
 
-# OS files and local secrets
+# 운영체제 파일·로컬 비밀 설정
 .DS_Store
 Thumbs.db
 Desktop.ini
@@ -38,4 +52,5 @@ Desktop.ini
 .env.*
 !.env.example
 
-# Keep Assets (including .meta), Packages and ProjectSettings tracked.
+# Assets와 .meta, Packages의 manifest.json·packages-lock.json, ProjectSettings는 추적합니다.
+# DLL·이미지·폰트·패키지 잠금 파일을 일괄 제외하지 않습니다.
