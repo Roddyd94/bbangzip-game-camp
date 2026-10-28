@@ -35,12 +35,13 @@ SFML의 함수·변수 명명 규칙을 유지합니다.
 
 각 종류 안에서는 **public → protected → private** 순서로 배치합니다. 비어 있는 구간은 생략합니다. 종류가 바뀌면 접근 지정자를 다시 선언할 수 있습니다. 전체 클래스를 public 하나, protected 하나, private 하나로만 묶어 종류 순서를 깨뜨리지 않습니다.
 
-함수 배치의 우선순위는 **함수 종류 → 접근 제한자 → 템플릿 여부 → const 여부**입니다.
+함수 배치의 우선순위는 **함수 종류 → 접근 제한자 → 템플릿 여부 → const 여부 → virtual/override 여부**입니다.
 
 1. 앞서 정한 종류 순서(생성·소멸·할당 → 데이터 → 나머지 연산자 → 일반 함수)를 유지합니다.
 2. 각 종류 안에서 `public → protected → private` 순서를 적용합니다.
 3. 같은 접근 수준 안에서는 **템플릿 멤버 함수 → 비템플릿 멤버 함수** 순서로 배치합니다.
 4. 각 템플릿·비템플릿 구간 안에서는 **const 멤버 함수 → 비const 멤버 함수** 순서로 배치합니다.
+5. 같은 const 구간 안에서는 **일반 함수 → 새로 선언하는 virtual 함수 → override 함수** 순서로 배치합니다. virtual 여부 때문에 const·비const 구간을 섞지 않습니다. override와 함께 final을 쓴 함수도 override 구간에 둡니다. 멤버 함수 템플릿은 virtual로 선언할 수 없으므로 이 구분은 적용 가능한 함수에만 사용합니다.
 
 따라서 같은 접근 수준의 일반 함수는 `템플릿 const → 템플릿 비const → 비템플릿 const → 비템플릿 비const` 순서입니다. 템플릿 비const 함수가 비템플릿 const 함수보다 먼저 옵니다. 템플릿·const 함수를 앞으로 모으려고 함수 종류나 접근 수준을 섞지 않습니다. 비어 있는 구간은 생략합니다.
 
@@ -255,4 +256,21 @@ namespace sf
 {
     class RenderTarget;
 }
+```
+
+## virtual·override 함수 순서 예시
+
+아래는 Base에 render/update가 선언되어 있다고 가정한 함수 배치 예시입니다. const 판단을 먼저 하므로 const override가 비const 일반 함수보다 앞에 옵니다.
+
+```cpp
+class Example : public Base
+{
+public:
+    uint32 getId() const;
+    virtual bool isVisible() const;
+    void render() const override;
+    void reset();
+    virtual void refresh();
+    void update() override;
+};
 ```
