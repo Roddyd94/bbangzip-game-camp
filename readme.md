@@ -36,12 +36,13 @@ Windows x64 / MSVC / C++17 / SFML 3.1.0 환경입니다. SFML 헤더·DLL·링�
 | `src/todo/GameEngine.cpp` | Pong 전용 설정 로딩·오브젝트 생성·입력 매핑 |
 | `src/todo/GameObject.hpp/.cpp` | 인터페이스 기본 구현과 World 참조 |
 | `src/todo/PongBody.hpp/.cpp` | 공통 위치·크기·색·직렬화·중앙선 표시 |
+| `src/todo/ScoreUI.hpp/.cpp` | PongGameRule의 좌·우 점수를 표시하는 폰트 없는 숫자 UI |
 | `src/todo/PongGameRule.hpp/.cpp` | World가 소유하는 레벨 경계·점수·리스폰 대기 시간 |
 | `content/game.ini` | 창 크기·프레임 제한·월드 및 설정 파일 경로 |
 | `content/input.ini` | global / player1 / player2 키 바인딩 |
 | `content/paddle.ini` | 패들 속력 |
 | `content/ball.ini` | 공 초기 속력·패들 명중 가속량·시작 위치 |
-| `content/pong.world` | 중앙선·Paddle 2개·Ball 1개 배치 |
+| `content/pong.world` | 중앙선·Paddle 2개·Ball 1개·ScoreUI 배치 |
 
 #### 구현 대상
 
@@ -80,6 +81,12 @@ const float ratio = utility::saturate(utility::inverseLerp(10.f, 30.f, 25.f)); /
 const float2 direction = utility::normalize(float2{3.f, 4.f}); // (0.6, 0.8)
 const float radians = utility::toRadians(90.f); // pi / 2
 ```
+
+### 점수 UI
+
+ScoreUI는 매 렌더링 시 World의 PongGameRule에서 점수를 읽어 좌측·우측 필드 상단에 표시합니다. 득점 처리에서 `recordScore(true)`는 왼쪽 플레이어, `recordScore(false)`는 오른쪽 플레이어 점수를 올립니다. `reset()`으로 두 점수를 지우면 UI도 다음 렌더링에 반영됩니다. 득점 판정과 전체 경기 Reset 연결은 구현 대상입니다.
+
+`pong.world`의 `ScoreUI 0 20 20 36 255 255 255 255`는 가로 오프셋·상단 여백, 숫자 한 자리의 너비·높이, RGBA입니다. 여러 자리 점수도 표시하며 별도 폰트 파일은 필요하지 않습니다. UI는 충돌 영역을 갖지 않습니다.
 
 ### InputComponent 사용
 
@@ -179,7 +186,7 @@ git switch -c work/01 upstream/week/01-pong
 필요한 경우 todo 소스만 지정합니다. 파일명은 src/todo 기준이며 하위 경로·저장소 기준 src/todo 경로·절대 경로도 사용할 수 있습니다. main과 core는 자동으로 포함됩니다.
 
 ```powershell
-./build.ps1 -TodoSources GameEngine.cpp,GameObject.cpp,PongBody.cpp,PongGameRule.cpp,MovementComponent.cpp,Paddle.cpp,Ball.cpp
+./build.ps1 -TodoSources GameEngine.cpp,GameObject.cpp,PongBody.cpp,PongGameRule.cpp,MovementComponent.cpp,Paddle.cpp,Ball.cpp,ScoreUI.cpp
 ./build.ps1 -Configuration Debug
 ```
 

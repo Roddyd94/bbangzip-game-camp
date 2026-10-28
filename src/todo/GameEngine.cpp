@@ -1,6 +1,7 @@
 #include "base/Types.hpp"
 #include "core/GameEngine.hpp"
 #include "PongBody.hpp"
+#include "ScoreUI.hpp"
 #include "PongGameRule.hpp"
 #include "Paddle.hpp"
 #include "Ball.hpp"
@@ -121,7 +122,9 @@ namespace
         std::unique_ptr<Object> operator()(const std::string& type) const
         {
             std::unique_ptr<GameObject> object;
-            if (type == "GameObject")
+            if (type == "ScoreUI")
+                object = std::make_unique<ScoreUI>(*world);
+            else if (type == "GameObject")
                 object = std::make_unique<PongBody>(*world);
             else if (type == "Paddle")
                 object = std::make_unique<Paddle>(*world, paddle, bindings);
