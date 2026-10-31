@@ -19,9 +19,9 @@ const BallSettings& Ball::getSettings() const
 	return m_settings;
 }
 
-const MovementComponent& Ball::getMovement() const
+const MovementComponent* Ball::getMovement() const
 {
-	return m_movement;
+	return m_movement.get();
 }
 
 sf::Vector2f Ball::getPreviousPosition() const
@@ -55,9 +55,9 @@ sf::FloatRect Ball::getCollisionBounds() const
 	return { minimum - radius, maximum - minimum + m_size };
 }
 
-MovementComponent& Ball::getMovement()
+MovementComponent* Ball::getMovement()
 {
-	return m_movement;
+	return m_movement.get();
 }
 
 void Ball::tick(float deltaTime)

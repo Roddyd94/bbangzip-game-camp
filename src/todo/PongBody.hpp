@@ -4,6 +4,8 @@
 
 class PongBody : public GameObject
 {
+	friend class MovementComponent;
+
 public:
 	explicit PongBody(World& world) : GameObject(world), m_shouldRender(true)
 	{
