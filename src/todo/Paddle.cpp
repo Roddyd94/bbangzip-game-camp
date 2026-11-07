@@ -1,6 +1,7 @@
 #include "Paddle.hpp"
 #include "PongGameRule.hpp"
 #include "core/World.hpp"
+#include "base/Utility.hpp"
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <istream>
 #include <ostream>
@@ -68,11 +69,7 @@ void Paddle::tick(float deltaTime)
 		return;
 
 	sf::FloatRect boundary = gameRule->getBoundary();
-
-	if (m_position.y < boundary.position.y)
-		m_position.y = boundary.position.y;
-	else if (m_position.y > boundary.position.y + boundary.size.y - m_size.y)
-		m_position.y = boundary.position.y + boundary.size.y - m_size.y;
+	m_position.y = utility::clamp(m_position.y, boundary.position.y, boundary.position.y + boundary.size.y - m_size.y);
 }
 
 void Paddle::deserialize(std::istream& input)

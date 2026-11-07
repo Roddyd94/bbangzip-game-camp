@@ -109,9 +109,9 @@ void Ball::tick(float deltaTime)
 	sf::FloatRect boundary = gameRule->getBoundary();
 
 	// 벽 충돌
+	auto direction = m_movement->GetDirection();
 	if (m_position.y < boundary.position.y)
 	{
-		auto direction = m_movement->GetDirection();
 		direction.y = std::abs(direction.y);
 		m_movement->SetDirection(direction);
 
@@ -119,7 +119,6 @@ void Ball::tick(float deltaTime)
 	}
 	else if (m_position.y > boundary.position.y + boundary.size.y - m_size.y)
 	{
-		auto direction = m_movement->GetDirection();
 		direction.y = -std::abs(direction.y);
 		m_movement->SetDirection(direction);
 
@@ -134,10 +133,7 @@ void Ball::tick(float deltaTime)
 		m_waitForRespawn = gameRule->getRespawnDelay();
 		m_shouldRender = false;
 
-		if (m_position.x < boundary.position.x)
-			gameRule->recordScore(false);
-		else
-			gameRule->recordScore(true);
+		gameRule->recordScore(m_position.x > boundary.size.x);
 	}
 }
 
@@ -179,10 +175,12 @@ void Ball::onCollision(Object& other)
 		return;
 
 	float t = (ballCenterPos.y - paddleBounds.getCenter().y) / (paddleBounds.getCenter().y - paddleBounds.position.y);
-	float speedX = paddle->getPosition().x > gameRule->getBoundary().getCenter().x ? -1.f : 1.f;
-	float speedY = utility::lerp(0.f, 1.f, t);
+
+	float directionX = paddle->getPosition().x > gameRule->getBoundary().getCenter().x ? -1.f : 1.f;
+	float directionY = utility::lerp(0.f, 1.f, t);
+
 	m_movement->SetSpeed(m_movement->GetSpeed() + m_settings.collisionSpeedIncrease);
-	m_movement->SetDirection({ speedX, speedY });
+	m_movement->SetDirection({ directionX, directionY });
 }
 
 void Ball::deserialize(std::istream& input)
