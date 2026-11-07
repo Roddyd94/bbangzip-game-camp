@@ -1,6 +1,8 @@
 #include "Ball.hpp"
+#include "Paddle.hpp"
 #include "PongGameRule.hpp"
 #include "core/World.hpp"
+#include "base/Utility.hpp"
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <algorithm>
 #include <iomanip>
@@ -8,10 +10,14 @@
 #include <sstream>
 
 Ball::Ball(World& world, const BallSettings& settings)
-	: PongBody(world), m_shape(std::make_unique<sf::CircleShape>()), m_settings(settings), m_previousPosition(settings.startPosition)
+	: PongBody(world), m_shape(std::make_unique<sf::CircleShape>()),
+	m_settings(settings), m_previousPosition(settings.startPosition),
+	m_movement(std::make_unique<MovementComponent>(this)),
+	m_isBallBounced(false), m_readyToResetBounceFlag(false)
 {
 	m_position = settings.startPosition;
-	// TODO: m_movement를 초기화하세요.
+	m_movement->SetSpeed(m_settings.speed);
+	m_movement->SetDirection({ 1.f, 1.f });
 }
 
 const BallSettings& Ball::getSettings() const
@@ -62,11 +68,77 @@ MovementComponent* Ball::getMovement()
 
 void Ball::tick(float deltaTime)
 {
+	if (m_isBallBounced)
+	{
+		if (!m_readyToResetBounceFlag)
+			m_readyToResetBounceFlag = true;
+		else
+		{
+			m_isBallBounced = false;
+			m_readyToResetBounceFlag = false;
+		}
+	}
+
 	m_previousPosition = m_position;
+
+	if (m_waitForRespawn >= 0.f)
+	{
+		m_waitForRespawn -= deltaTime;
+
+		if (m_waitForRespawn < 0.f)
+		{
+			PongGameRule* gameRule = dynamic_cast<PongGameRule*>(m_world.getGameRule());
+			if (!gameRule)
+				return;
+
+			m_shouldRender = true;
+			m_movement->SetSpeed(m_settings.speed);
+			m_position.x = gameRule->getBoundary().getCenter().x;
+		}
+
+		return;
+	}
+
 	// TODO: MovementComponent로 위치를 갱신하고 레벨 벽 충돌·득점을 처리하세요.
-	// TODO: 3초 대기 후 득점 접촉점을 중심선에 사영하여 리스폰하세요.
-	//       운동 방향을 유지하고 설정된 초기 속력으로 복원하세요.
-	(void)deltaTime;
+	m_movement->Move(deltaTime);
+
+	PongGameRule* gameRule = dynamic_cast<PongGameRule*>(m_world.getGameRule());
+	if (!gameRule)
+		return;
+
+	sf::FloatRect boundary = gameRule->getBoundary();
+
+	// 벽 충돌
+	if (m_position.y < boundary.position.y)
+	{
+		auto direction = m_movement->GetDirection();
+		direction.y = std::abs(direction.y);
+		m_movement->SetDirection(direction);
+
+		m_position.y = boundary.position.y * 2 - m_position.y;
+	}
+	else if (m_position.y > boundary.position.y + boundary.size.y - m_size.y)
+	{
+		auto direction = m_movement->GetDirection();
+		direction.y = -std::abs(direction.y);
+		m_movement->SetDirection(direction);
+
+		m_position.y = (boundary.position.y + boundary.size.y - m_size.y) * 2 - m_position.y;
+	}
+
+	// 득점
+	if (m_position.x < boundary.position.x
+		|| m_position.x > boundary.position.x + boundary.size.x - m_size.x)
+	{
+		m_movement->SetSpeed(0.f);
+		m_waitForRespawn = gameRule->getRespawnDelay();
+		m_shouldRender = false;
+
+		if (m_position.x < boundary.position.x)
+			gameRule->recordScore(false);
+		else
+			gameRule->recordScore(true);
+	}
 }
 
 void Ball::onCollision(Object& other)
@@ -75,7 +147,42 @@ void Ball::onCollision(Object& other)
 	// 이동 경로 AABB의 겹침은 후보일 뿐 실제 패들 명중을 의미하지 않습니다.
 	// TODO: 최초 접촉을 선택하고 패들 중심과 접촉점의 거리로 45~135도 반사를 계산하세요.
 	//       충돌 한 번당 속력을 한 번 증가시키고 패들 뒤로 넘어간 뒤에는 반사하지 마세요.
-	(void)other;
+
+	if (m_readyToResetBounceFlag)
+		m_readyToResetBounceFlag = false;
+
+	if (m_isBallBounced)
+		return;
+
+	Paddle* paddle = dynamic_cast<Paddle*>(&other);
+	if (!paddle)
+		return;
+
+	sf::FloatRect paddleBounds = paddle->getCollisionBounds();
+
+	float2 ballCenterPos = m_position + m_size / 2.f;
+	float ballRadius = m_size.x / 2.f;
+
+	bool isBallTouchingPaddle
+		= paddleBounds.position.x - ballCenterPos.x <= ballRadius
+		&& paddleBounds.position.y - ballCenterPos.y <= ballRadius
+		&& ballCenterPos.x - (paddleBounds.position.x + paddleBounds.size.x) <= ballRadius
+		&& ballCenterPos.y - (paddleBounds.position.y + paddleBounds.size.y) <= ballRadius;
+
+	if (!isBallTouchingPaddle)
+		return;
+
+	m_isBallBounced = true;
+
+	PongGameRule* gameRule = dynamic_cast<PongGameRule*>(m_world.getGameRule());
+	if (!gameRule)
+		return;
+
+	float t = (ballCenterPos.y - paddleBounds.getCenter().y) / (paddleBounds.getCenter().y - paddleBounds.position.y);
+	float speedX = paddle->getPosition().x > gameRule->getBoundary().getCenter().x ? -1.f : 1.f;
+	float speedY = utility::lerp(0.f, 1.f, t);
+	m_movement->SetSpeed(m_movement->GetSpeed() + m_settings.collisionSpeedIncrease);
+	m_movement->SetDirection({ speedX, speedY });
 }
 
 void Ball::deserialize(std::istream& input)

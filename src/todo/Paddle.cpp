@@ -7,9 +7,10 @@
 
 Paddle::Paddle(World& world, const PaddleSettings& settings, const InputSettings& bindings)
 	: PongBody(world), m_shape(std::make_unique<sf::RectangleShape>()),
-	m_input(std::make_unique<InputComponent>()), m_bindings(bindings)
+	m_input(std::make_unique<InputComponent>()), m_bindings(bindings),
+	m_movement(std::make_unique<MovementComponent>(this))
 {
-	// TODO: m_movement를 초기화하세요.
+	m_movement->SetSpeed(settings.speed);
 }
 
 const MovementComponent* Paddle::getMovement() const
@@ -57,8 +58,21 @@ void Paddle::tick(float deltaTime)
 {
 	m_input->update();
 	const float moveInput = m_input->getKeyState(static_cast<uint8>(PaddleKey::Move));
-	// TODO: moveInput(-1: 위, +1: 아래)으로 이동 방향을 정하고 변위를 적용하세요.
+
+	m_movement->SetDirection(float2(0.f, moveInput));
+	m_movement->Move(deltaTime);
+
 	// TODO: 기준점뿐 아니라 패들 전체가 World의 PongGameRule 경계 안에 있도록 위치를 제한하세요.
+	PongGameRule* gameRule = dynamic_cast<PongGameRule*>(m_world.getGameRule());
+	if (!gameRule)
+		return;
+
+	sf::FloatRect boundary = gameRule->getBoundary();
+
+	if (m_position.y < boundary.position.y)
+		m_position.y = boundary.position.y;
+	else if (m_position.y > boundary.position.y + boundary.size.y - m_size.y)
+		m_position.y = boundary.position.y + boundary.size.y - m_size.y;
 }
 
 void Paddle::deserialize(std::istream& input)

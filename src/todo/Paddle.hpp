@@ -39,4 +39,5 @@ public:
 	InputComponent* getInputComponent();
 	void tick(float deltaTime) override;
 	void deserialize(std::istream& input) override;
+
 };

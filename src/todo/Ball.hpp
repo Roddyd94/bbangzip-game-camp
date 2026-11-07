@@ -6,32 +6,35 @@
 
 struct BallSettings
 {
-    sf::Vector2f startPosition{};
-    float speed{0.f};
-    float collisionSpeedIncrease{0.f};
+	sf::Vector2f startPosition{};
+	float speed{ 0.f };
+	float collisionSpeedIncrease{ 0.f };
 };
 
 class Ball : public PongBody
 {
 public:
-    Ball(World& world, const BallSettings& settings);
+	Ball(World& world, const BallSettings& settings);
 
 private:
-    std::unique_ptr<sf::CircleShape> m_shape;
-    std::unique_ptr<MovementComponent> m_movement;
-    BallSettings m_settings;
-    sf::Vector2f m_previousPosition{};
-    // TODO: 필요한 멤버 변수를 추가하세요.
+	std::unique_ptr<sf::CircleShape> m_shape;
+	std::unique_ptr<MovementComponent> m_movement;
+	BallSettings m_settings;
+	sf::Vector2f m_previousPosition{};
+	// TODO: 필요한 멤버 변수를 추가하세요.
+	float m_waitForRespawn = 0.f;
+	uint8 m_isBallBounced : 1;
+	uint8 m_readyToResetBounceFlag : 1;
 
 public:
-    const BallSettings& getSettings() const;
-    const MovementComponent* getMovement() const;
-    sf::Vector2f getPreviousPosition() const;
-    void render(sf::RenderTarget& target) const override;
-    void serialize(std::ostream& output) const override;
-    sf::FloatRect getCollisionBounds() const override;
-    MovementComponent* getMovement();
-    void tick(float deltaTime) override;
-    void onCollision(Object& other) override;
-    void deserialize(std::istream& input) override;
+	const BallSettings& getSettings() const;
+	const MovementComponent* getMovement() const;
+	sf::Vector2f getPreviousPosition() const;
+	void render(sf::RenderTarget& target) const override;
+	void serialize(std::ostream& output) const override;
+	sf::FloatRect getCollisionBounds() const override;
+	MovementComponent* getMovement();
+	void tick(float deltaTime) override;
+	void onCollision(Object& other) override;
+	void deserialize(std::istream& input) override;
 };

@@ -1,11 +1,26 @@
 #pragma once
-#include <SFML/System/Vector2.hpp>
+#include "base/SfTypes.hpp"
+
+class PongBody;
 
 class MovementComponent
 {
+public:
+	MovementComponent(PongBody* parent);
+
 private:
-    // TODO: 필요한 멤버 변수를 추가하세요.
+	PongBody* parent;
+	float2 m_direction;
+	float m_speed;
+
+	inline static float g_epsilon = 0.0001f;
 
 public:
-    // TODO: 필요한 멤버 함수를 선언하세요.
+	float2 GetDirection() const;
+	float GetSpeed() const;
+
+	void Move(float deltaTime);
+	void SetVelocity(float2 velocity);
+	void SetDirection(float2 direction);
+	void SetSpeed(float speed);
 };
