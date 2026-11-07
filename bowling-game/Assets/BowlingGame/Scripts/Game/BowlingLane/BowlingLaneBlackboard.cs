@@ -50,7 +50,7 @@ public sealed class BowlingLaneBlackboard
         frame.IsComplete = decision.IsFrameComplete;
         CurrentFrameNumber = decision.NextFrameNumber;
         CurrentRollNumber = decision.NextRollNumber;
-        StandingPinMask = decision.NextStandingPinMask;
+        StandingPinMask = decision.NextRollStandingPinMask;
         IsFinished = decision.IsGameFinished;
         AwaitingPinSetup = !IsFinished;
     }
@@ -88,6 +88,7 @@ public sealed class BowlingFrameRecord
     }
 }
 
+/// <summary>한 번의 투구에서 핀 상태가 어떻게 바뀌었는지 기록합니다.</summary>
 [Serializable]
 public sealed class BowlingRollRecord
 {

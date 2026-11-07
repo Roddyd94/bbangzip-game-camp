@@ -29,8 +29,8 @@ public class BowlingPinSetter : MonoBehaviour
     private BowlingRollDecision? pendingSetup;
 
     private ushort PreservedPinMask =>
-        pendingSetup is { RequiresFullRack: false } decision
-        ? decision.NextStandingPinMask
+        pendingSetup is { ShouldResetRack: false } decision
+        ? decision.NextRollStandingPinMask
         : (ushort)0;
 
     private void Awake()
@@ -145,7 +145,7 @@ public class BowlingPinSetter : MonoBehaviour
         ushort preservedPinMask = PreservedPinMask;
         for (int i = 0; i < pinBodies.Length; ++i)
         {
-            if (decision.RequiresFullRack)
+            if (decision.ShouldResetRack)
                 RestorePin(i, startPositions[i], startRotations[i]);
             else if ((preservedPinMask & (1 << i)) != 0)
                 RestorePin(i, preservedPositions[i], preservedRotations[i]);

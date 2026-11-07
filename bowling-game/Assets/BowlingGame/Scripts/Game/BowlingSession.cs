@@ -21,6 +21,7 @@ public sealed class BowlingSession : MonoBehaviour, IEventSubscriber<RollData>, 
     private float rollingSeconds;
     private float stoppedSeconds;
     private bool resultRequested;
+    private bool resultRejected;
     private bool initialized;
 
     public BowlingShotStage Stage => stage;
@@ -87,6 +88,7 @@ public sealed class BowlingSession : MonoBehaviour, IEventSubscriber<RollData>, 
         lane.Ball.Place(GetBallStartPosition());
         stage = BowlingShotStage.StartPosition;
         resultRequested = false;
+        resultRejected = false;
         lane.BeginGame(hud.Text.playerName);
         cameraController.ShowSetup(GetBallStartPosition(), lane.HeadPinPoint.position);
         hud.ShowResult(hud.Text.setupHint);
@@ -159,17 +161,28 @@ public sealed class BowlingSession : MonoBehaviour, IEventSubscriber<RollData>, 
         if (stage <= BowlingShotStage.Ready)
             lane.Ball.Place(GetBallStartPosition());
 
-        if (stage == BowlingShotStage.Rolling && !resultRequested)
+        if (stage == BowlingShotStage.Rolling && !resultRejected)
         {
-            rollingSeconds += Time.deltaTime;
-            stoppedSeconds = lane.Ball.Speed < 0.12f ? stoppedSeconds + Time.deltaTime : 0f;
-            if (rollingSeconds >= rollTimeLimit
-                || lane.Ball.Position.y < -1f
-                || (rollingSeconds > 2f && stoppedSeconds > 1f))
-            {
+            if (lane.IsResolvingRoll)
                 resultRequested = true;
-                lane.OnBallReachLaneEnd();
-                hud.ShowResult(hud.Text.stoppedHint);
+            else if (resultRequested)
+            {
+                resultRejected = true;
+                lane.Ball.Place(GetBallStartPosition());
+                hud.ShowResult(hud.Text.rejectedRollHint);
+            }
+            else
+            {
+                rollingSeconds += Time.deltaTime;
+                stoppedSeconds = lane.Ball.Speed < 0.12f ? stoppedSeconds + Time.deltaTime : 0f;
+                if (rollingSeconds >= rollTimeLimit
+                    || lane.Ball.Position.y < -1f
+                    || (rollingSeconds > 2f && stoppedSeconds > 1f))
+                {
+                    resultRequested = true;
+                    lane.OnBallReachLaneEnd();
+                    hud.ShowResult(hud.Text.stoppedHint);
+                }
             }
         }
 

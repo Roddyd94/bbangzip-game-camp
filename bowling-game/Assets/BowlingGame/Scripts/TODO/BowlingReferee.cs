@@ -502,6 +502,12 @@ public sealed class BowlingReferee : MonoBehaviour
         return count;
     }
 
+    /// <summary>투구 결과를 판정하고 성공 시 기록과 다음 투구 상태를 갱신합니다.</summary>
+    /// <param name="board">투구 전 레인 상태와 기존 기록입니다.</param>
+    /// <param name="standingPinMask">투구 후 서 있는 핀입니다. 비트 0이 1번 핀이며, 0은 전부 쓰러진 상태입니다.</param>
+    /// <param name="roll">성공 시 이번 투구 기록입니다.</param>
+    /// <param name="decision">성공 시 프레임 완료, 경기 종료, 다음 투구와 핀 배치 결정입니다.</param>
+    /// <returns>기록에 반영했으면 true, 반영하지 않았으면 false입니다.</returns>
     public bool TryResolveRoll(BowlingLaneBlackboard board, ushort standingPinMask,
         out BowlingRollRecord roll, out BowlingRollDecision decision)
     {
@@ -518,39 +524,82 @@ public sealed class BowlingReferee : MonoBehaviour
             || (standingPinMask & ~board.StandingPinMask) != 0)
             return false;
 
-        // TODO: 투구 결과 판정과 다음 투구 진행을 구현하세요.
-        // roll = new BowlingRollRecord(...);
-        // decision = new BowlingRollDecision(...);
+        int frameNumber = board.CurrentFrameNumber;
+        int rollNumber = board.CurrentRollNumber;
+        var frame = board.GetFrame(frameNumber);
+        if (frame == null || frame.Rolls.Count != rollNumber - 1)
+            return false;
 
+        ushort beforePinMask = board.StandingPinMask;
+        ushort afterPinMask = standingPinMask;
+        int remainingPinCount = CountPins(afterPinMask);
+        int pinCount = CountPins(beforePinMask) - remainingPinCount;
+        bool isFinalFrame = frameNumber == 10;
+        bool isFreshRack = rollNumber == 1
+            || (isFinalFrame && frame.Rolls[rollNumber - 2].AfterPinMask == 0);
+
+        // TODO: mark를 판정하세요.
+        BowlingRollMark mark = BowlingRollMark.None;
+
+        // TODO: 일반 프레임과 10프레임의 다음 투구 상태를 결정하세요.
+        /*
+        bool isFrameComplete = false;
+        bool isGameFinished = false;
+        bool shouldResetRack = false;
+        int nextFrameNumber = frameNumber;
+        int nextRollNumber = rollNumber + 1;
+        ushort nextRollStandingPinMask = afterPinMask;
+
+        decision = new BowlingRollDecision(isFrameComplete, isGameFinished, shouldResetRack,
+            nextFrameNumber, nextRollNumber, nextRollStandingPinMask);
+        */
+
+        // 결정이 채워지기 전에는 경기 기록을 갱신하지 않습니다.
+        if (decision.NextFrameNumber == 0)
+            return false;
+
+        roll = new BowlingRollRecord(frameNumber, rollNumber, beforePinMask, afterPinMask, pinCount, remainingPinCount, mark);
         board.Record(roll, decision);
         RecalculateScores(board);
 
         return true;
     }
 
+    /// <summary>저장된 투구를 읽어 프레임 점수와 확정 여부, 누적 점수를 갱신합니다.</summary>
+    /// <param name="board">점수를 갱신할 경기 기록입니다.</param>
     private void RecalculateScores(BowlingLaneBlackboard board)
     {
+        var pinCounts = new List<int>();
+        foreach (var frame in board.Frames)
+        {
+            foreach (var roll in frame.Rolls)
+                pinCounts.Add(roll.PinCount);
+        }
+
         // TODO: 프레임 점수와 누적 점수 계산을 구현하세요.
     }
 }
 
+/// <summary>투구 판정 후 경기 진행과 다음 투구의 핀 배치를 결정합니다.</summary>
 public readonly struct BowlingRollDecision
 {
     public bool IsFrameComplete { get; }
     public bool IsGameFinished { get; }
-    public bool RequiresFullRack { get; }
+    /// <summary>다음 투구 전에 핀 10개를 다시 세울지 나타냅니다.</summary>
+    public bool ShouldResetRack { get; }
     public int NextFrameNumber { get; }
     public int NextRollNumber { get; }
-    public ushort NextStandingPinMask { get; }
+    /// <summary>다음 투구 시작 시 서 있어야 할 핀의 비트 마스크입니다.</summary>
+    public ushort NextRollStandingPinMask { get; }
 
-    public BowlingRollDecision(bool isFrameComplete, bool isGameFinished, bool requiresFullRack,
-        int nextFrameNumber, int nextRollNumber, ushort nextStandingPinMask)
+    public BowlingRollDecision(bool isFrameComplete, bool isGameFinished, bool shouldResetRack,
+        int nextFrameNumber, int nextRollNumber, ushort nextRollStandingPinMask)
     {
         IsFrameComplete = isFrameComplete;
         IsGameFinished = isGameFinished;
-        RequiresFullRack = requiresFullRack;
+        ShouldResetRack = shouldResetRack;
         NextFrameNumber = nextFrameNumber;
         NextRollNumber = nextRollNumber;
-        NextStandingPinMask = nextStandingPinMask;
+        NextRollStandingPinMask = nextRollStandingPinMask;
     }
 }
