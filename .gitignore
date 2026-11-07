@@ -24,6 +24,7 @@ sysinfo.txt
 
 # IDE 생성 파일과 개인 작업 상태
 .vs/
+.vscode/
 .idea/
 *.csproj
 *.unityproj
@@ -31,6 +32,9 @@ sysinfo.txt
 *.slnx
 *.user
 *.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
 *.pidb
 *.booproj
 *.svd
@@ -40,6 +44,7 @@ sysinfo.txt
 *.VC.db
 *.csproj.meta
 *.sln.meta
+*.slnx.meta
 *.pidb.meta
 *.pdb.meta
 *.mdb.meta
@@ -54,3 +59,6 @@ Desktop.ini
 
 # Assets와 .meta, Packages의 manifest.json·packages-lock.json, ProjectSettings는 추적합니다.
 # DLL·이미지·폰트·패키지 잠금 파일을 일괄 제외하지 않습니다.
+
+# 원본 제작 자료
+/SourceAssets/
