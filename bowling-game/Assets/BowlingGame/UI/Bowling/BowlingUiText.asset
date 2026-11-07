@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b77adc019d4ff3148aeeab28b4ce5501, type: 3}
+  m_Name: BowlingUiText
+  m_EditorClassIdentifier: Assembly-CSharp::BowlingUiText
+  stages:
+  - stage: 0
+    title: "01  \uACF5 \uCD9C\uBC1C \uC704\uCE58"
+    description: "\uB808\uC778 \uC548\uC5D0\uC11C \uACF5\uC744 \uC88C\uC6B0\uB85C \uC62E\uAE41\uB2C8\uB2E4."
+    valueFormat: '{0:+0.00;-0.00;0.00} m'
+  - stage: 1
+    title: "02  \uD22C\uAD6C \uAC01\uB3C4"
+    description: "\uCCAD\uB85D\uC0C9 \uC120\uC73C\uB85C \uBC1C\uC0AC \uBC29\uD5A5\uC744 \uD655\uC778\uD558\uC138\uC694."
+    valueFormat: "{0:+0.0;-0.0;0.0}\xB0"
+  - stage: 2
+    title: "03  \uD22C\uAD6C \uC138\uAE30"
+    description: "\uACF5\uC758 \uCD9C\uBC1C \uC18D\uB3C4\uB97C \uC124\uC815\uD569\uB2C8\uB2E4."
+    valueFormat: '{0:0}%  /  {1:0.0} m/s'
+  - stage: 3
+    title: "04  \uD68C\uC804 \uBC29\uD5A5"
+    description: "\uC8FC\uD669\uC0C9 \uD68C\uC804\uCD95\uC744 \uAE30\uC6B8\uC5EC \uC88C\uC6B0 \uD68C\uC804\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. 0\uC740 \uC815\uBC29\uD5A5 \uAD6C\uB984\uC785\uB2C8\uB2E4."
+    valueFormat: "{0:+0;-0;0}\xB0"
+  - stage: 4
+    title: "05  \uD68C\uC804 \uC138\uAE30"
+    description: "\uCD94\uAC00 \uD68C\uC804\uB7C9\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. \uD68C\uC804 \uBC29\uD5A5\uACFC \uD568\uAED8 \uACF5\uC758 \uD718\uC5B4\uC9D0\uC5D0 \uC601\uD5A5\uC744 \uC90D\uB2C8\uB2E4."
+    valueFormat: '{0:0}%  /  {1:0.0} rad/s'
+  - stage: 5
+    title: "\uD22C\uAD6C \uC900\uBE44 \uC644\uB8CC"
+    description: "Enter / Space \uB610\uB294 \uD22C\uAD6C\uD558\uAE30\uB97C \uB204\uB974\uC138\uC694. Backspace\uB85C \uB2E4\uC2DC \uC870\uC808\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
+    valueFormat: "\uAC01\uB3C4 {0:0.0}\xB0  \xB7  \uC138\uAE30 {1:0}%  \xB7  \uD68C\uC804 {2:0}\xB0 / {3:0}%"
+  - stage: 6
+    title: "\uACF5\uC774 \uAD74\uB7EC\uAC00\uB294 \uC911"
+    description: "C\uB85C \uCE74\uBA54\uB77C\uB97C \uBC14\uAFC0 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
+    valueFormat: '{0:0.0} m/s'
+  - stage: 7
+    title: "\uD540\uC138\uD130 \uC791\uB3D9 \uC911"
+    description: "\uB0A8\uC740 \uD540\uC744 \uBCF4\uC874\uD558\uACE0 \uB2E4\uC74C \uD22C\uAD6C\uB97C \uC900\uBE44\uD569\uB2C8\uB2E4."
+    valueFormat: "\uC7A0\uC2DC \uAE30\uB2E4\uB824 \uC8FC\uC138\uC694"
+  - stage: 8
+    title: "\uACBD\uAE30 \uC885\uB8CC"
+    description: "Enter / Space \uB610\uB294 R\uB85C \uC0C8 \uACBD\uAE30\uB97C \uC2DC\uC791\uD569\uB2C8\uB2E4."
+    valueFormat: "\uCD1D\uC810 {0}"
+  playerName: "\uD50C\uB808\uC774\uC5B4 01"
+  setupHint: "\uC870\uC791\uAC12\uC744 \uB2E8\uACC4\uBCC4\uB85C \uC124\uC815\uD55C \uB4A4 \uD22C\uAD6C\uD558\uC138\uC694."
+  rollingHint: "\uD22C\uAD6C \uC911\uC785\uB2C8\uB2E4. \uD540 \uACB0\uACFC\uAC00 \uC548\uC815\uB420 \uB54C\uAE4C\uC9C0 \uAE30\uB2E4\uB9BD\uB2C8\uB2E4."
+  stoppedHint: "\uACF5\uC774 \uBA48\uCD94\uAC70\uB098 \uB808\uC778\uC744 \uBC97\uC5B4\uB098 \uACB0\uACFC\uB97C \uD655\uC778\uD569\uB2C8\uB2E4."
+  gameEndHint: "\uACBD\uAE30\uAC00 \uB05D\uB0AC\uC2B5\uB2C8\uB2E4. \uAE30\uB85D\uC740 \uC624\uB978\uCABD \uC810\uC218\uD310\uC5D0\uC11C \uD655\uC778\uD558\uC138\uC694."
+  strike: "\uC2A4\uD2B8\uB77C\uC774\uD06C"
+  spare: "\uC2A4\uD398\uC5B4"
+  split: "\uC2A4\uD50C\uB9BF"
+  rollResult: "\uD22C\uAD6C \uACB0\uACFC"
+  rollResultFormat: "{0}  \xB7  \uC774\uBC88 \uD22C\uAD6C {1}\uD540  \xB7  \uB0A8\uC740 \uD540 {2}\uAC1C"
+  nextButton: "\uD655\uC815 / \uB2E4\uC74C"
+  throwButton: "\uD22C\uAD6C\uD558\uAE30"
+  restartButton: "\uC0C8 \uACBD\uAE30"
+  gameStatusFormat: LANE {0:00}     FRAME {1:00} / 10     ROLL {2}     SCORE {3}
+  cameraLabelFormat: "\uCE74\uBA54\uB77C: {0}"
+  cameraNames:
+  - "\uAE30\uBCF8"
+  - "\uCE21\uBA74"
+  - "\uB808\uC778 \uC804\uCCB4"
+  laneLabelFormat: LANE {0:00}
+  frameLabelFormat: '{0:00} / 10'
+  rollLabelFormat: "{0}\uBC88\uC9F8 \uD22C\uAD6C"
+  waitingForRoll: "\uD22C\uAD6C \uB300\uAE30"
+  rollComplete: "\uD22C\uAD6C \uC644\uB8CC"
+  gameOver: "\uACBD\uAE30 \uC885\uB8CC"
+  complete: "\uC644\uB8CC"
+  pinNumberFormat: 00
+  scoreNumberFormat: 0
+  unconfirmedScore: '-'
+  physicsTitle: BOWLING PHYSICS PREVIEW
+  physicsControls: 'SPACE: launch    R: reset    A / D: aim'
+  physicsStatusFormat: 'Fallen: {0} / {1}    Aim: {2:F2} m'
+  physicsAutoReplay: Auto replay (10s)
+  physicsLaunch: Launch
+  physicsReset: Reset
