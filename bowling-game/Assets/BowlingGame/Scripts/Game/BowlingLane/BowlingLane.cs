@@ -16,6 +16,7 @@ public sealed class BowlingLane : MonoBehaviour
     public BowlingReferee Referee => referee;
     public BowlingPinSetter PinSetter => pinSetter;
     public BowlingBall Ball => ball;
+    public bool IsResolvingRoll => waitAndSweepCoroutine != null;
     public BowlingAimPreview AimPreview => aimPreview;
     public Transform BallStartPoint => ballStartPoint;
     public Transform HeadPinPoint => headPinPoint;
@@ -80,7 +81,7 @@ public sealed class BowlingLane : MonoBehaviour
 
     private void OnBallReached(BowlingLaneEnd sender, BowlingBall ball)
     {
-        if (sender == laneEnd)
+        if (sender == laneEnd && ball == Ball)
             OnBallReachLaneEnd();
     }
 

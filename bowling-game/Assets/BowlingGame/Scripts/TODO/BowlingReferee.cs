@@ -625,23 +625,26 @@ public sealed class BowlingReferee : MonoBehaviour
     }
 }
 
+/// <summary>투구 판정 후 경기 진행과 다음 투구의 핀 배치를 결정합니다.</summary>
 public readonly struct BowlingRollDecision
 {
     public bool IsFrameComplete { get; }
     public bool IsGameFinished { get; }
-    public bool RequiresFullRack { get; }
+    /// <summary>다음 투구 전에 핀 10개를 다시 세울지 나타냅니다.</summary>
+    public bool ShouldResetRack { get; }
     public int NextFrameNumber { get; }
     public int NextRollNumber { get; }
-    public ushort NextStandingPinMask { get; }
+    /// <summary>다음 투구 시작 시 서 있어야 할 핀의 비트 마스크입니다.</summary>
+    public ushort NextRollStandingPinMask { get; }
 
-    public BowlingRollDecision(bool isFrameComplete, bool isGameFinished, bool requiresFullRack,
-        int nextFrameNumber, int nextRollNumber, ushort nextStandingPinMask)
+    public BowlingRollDecision(bool isFrameComplete, bool isGameFinished, bool shouldResetRack,
+        int nextFrameNumber, int nextRollNumber, ushort nextRollStandingPinMask)
     {
         IsFrameComplete = isFrameComplete;
         IsGameFinished = isGameFinished;
-        RequiresFullRack = requiresFullRack;
+        ShouldResetRack = shouldResetRack;
         NextFrameNumber = nextFrameNumber;
         NextRollNumber = nextRollNumber;
-        NextStandingPinMask = nextStandingPinMask;
+        NextRollStandingPinMask = nextRollStandingPinMask;
     }
 }

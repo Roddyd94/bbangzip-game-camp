@@ -19,6 +19,7 @@ public sealed class BowlingUiText : ScriptableObject
     public string setupHint;
     public string rollingHint;
     public string stoppedHint;
+    public string rejectedRollHint;
     public string gameEndHint;
     public string strike;
     public string spare;

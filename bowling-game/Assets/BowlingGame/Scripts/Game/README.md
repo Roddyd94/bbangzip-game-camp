@@ -30,7 +30,7 @@ PinSetter → Lane: 실제 작업 완료 후 CompletePinSetup 메서드 호출.
 Lane → Publisher: GameEvent / FrameEvent / RollEvent 로컬 이벤트.
 Publisher → 외부 점수판: EventBus.
 
-PinSetter의 실제 집게·스위퍼·핀 물리 이동은 기존 미구현 상태입니다. 해당 구현에서 PinSetupRequested를 구독하고, decision.RequiresFullRack에 따라 전체 재배치 또는 남은 핀 보존 작업을 마친 뒤 CompletePinSetup을 호출해야 합니다. 대기 시간만으로 핀 준비 완료를 가정하지 않습니다. 게임 재시작 시 실제 공·핀 원위치 복귀 역시 그 구현에서 함께 수행해야 합니다.
+PinSetter의 실제 집게·스위퍼·핀 물리 이동은 기존 미구현 상태입니다. 해당 구현에서 PinSetupRequested를 구독하고, decision.ShouldResetRack에 따라 전체 재배치 또는 남은 핀 보존 작업을 마친 뒤 CompletePinSetup을 호출해야 합니다. 대기 시간만으로 핀 준비 완료를 가정하지 않습니다. 게임 재시작 시 실제 공·핀 원위치 복귀 역시 그 구현에서 함께 수행해야 합니다.
 
 FrameEnd는 프레임 종료 시뿐 아니라 후속 투구로 보너스가 확정된 이전 프레임에도 발행됩니다. FrameData.Score는 점수판 칸에 표시할 해당 프레임까지의 누적 점수이고, Blackboard 프레임의 Score는 그 프레임 자체의 점수, TotalScore는 누적 점수입니다. RollData.PinCount는 이번 투구에서 쓰러뜨린 수이며 RemainingPinCount와 구분합니다.
 
