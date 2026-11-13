@@ -499,15 +499,21 @@ public sealed class BowlingReferee : MonoBehaviour
             mask = (ushort)(mask & (mask - 1));
             ++count;
         }
-
         return count;
     }
 
+    /// <summary>투구 결과를 판정하고 성공 시 기록과 다음 투구 상태를 갱신합니다.</summary>
+    /// <param name="board">투구 전 레인 상태와 기존 기록입니다.</param>
+    /// <param name="standingPinMask">투구 후 서 있는 핀입니다. 비트 0이 1번 핀이며, 0은 전부 쓰러진 상태입니다.</param>
+    /// <param name="roll">성공 시 이번 투구 기록입니다.</param>
+    /// <param name="decision">성공 시 프레임 완료, 경기 종료, 다음 투구와 핀 배치 결정입니다.</param>
+    /// <returns>기록에 반영했으면 true, 반영하지 않았으면 false입니다.</returns>
     public bool TryResolveRoll(BowlingLaneBlackboard board, ushort standingPinMask,
         out BowlingRollRecord roll, out BowlingRollDecision decision)
     {
         roll = null;
         decision = default;
+
         if (board == null
             || !board.IsStarted
             || board.IsFinished
@@ -518,110 +524,242 @@ public sealed class BowlingReferee : MonoBehaviour
             || (standingPinMask & ~board.StandingPinMask) != 0)
             return false;
 
-        var frame = board.GetFrame(board.CurrentFrameNumber);
+        int frameNumber = board.CurrentFrameNumber;
         int rollNumber = board.CurrentRollNumber;
-        if (frame == null
-            || frame.Rolls.Count != rollNumber - 1)
+        var frame = board.GetFrame(frameNumber);
+        if (frame == null || frame.Rolls.Count != rollNumber - 1)
             return false;
 
-        int remaining = CountPins(standingPinMask);
-        int knocked = CountPins(board.StandingPinMask) - remaining;
-        bool freshRack = rollNumber == 1
-            || (frame.FrameNumber == 10 && frame.Rolls[rollNumber - 2].AfterPinMask == 0);
+        ushort beforePinMask = board.StandingPinMask;
+        ushort afterPinMask = standingPinMask;
+        int remainingPinCount = CountPins(afterPinMask);
+        int pinCount = CountPins(beforePinMask) - remainingPinCount;
+        bool isFinalFrame = frameNumber == 10;
+        bool isFreshRack = rollNumber == 1
+            || (isFinalFrame && frame.Rolls[rollNumber - 2].AfterPinMask == 0);
 
-        BowlingRollMark mark = BowlingRollMark.None;
-        if (knocked == 0)
-            mark = BowlingRollMark.Miss;
-        else if (remaining == 0)
-            mark = freshRack ? BowlingRollMark.Strike : BowlingRollMark.Spare;
-        else if (freshRack && IsSplit(standingPinMask))
-            mark = BowlingRollMark.Split;
-
-        roll = new BowlingRollRecord(frame.FrameNumber, rollNumber, board.StandingPinMask,
-            standingPinMask, knocked, remaining, mark);
-        bool frameComplete;
-        bool finished = false;
-        bool fullRack = false;
-        int nextFrame = frame.FrameNumber;
-        int nextRoll = rollNumber + 1;
-
-        if (frame.FrameNumber < 10)
+        // TODO: mark를 판정하세요.
+        var mark = BowlingRollMark.None;
+        var previousRoll = frame.Rolls.Count > 0 ? frame.Rolls[frame.Rolls.Count - 1] : null;
+        if (frameNumber < 10)
         {
-            frameComplete = knocked == 10 || rollNumber == 2;
-            if (frameComplete)
+            if (1 == rollNumber)
             {
-                ++nextFrame;
-                nextRoll = 1;
-                fullRack = true;
+                if (0 == remainingPinCount)
+                {
+                    mark = BowlingRollMark.Strike;
+                }
+                else if (10 == remainingPinCount)
+                {
+                    mark = BowlingRollMark.Miss;
+                }
+                else
+                {
+                    if (IsSplit(standingPinMask))
+                        mark = BowlingRollMark.Split;
+                }
+            }
+            else
+            {
+                if (0 == remainingPinCount)
+                {
+                    mark = BowlingRollMark.Spare;
+                }
+                else if (CountPins(beforePinMask) == remainingPinCount)
+                {
+                    mark = BowlingRollMark.Miss;
+                }
             }
         }
         else
         {
-            bool hasBonus = frame.Rolls.Count > 0
-                && (frame.Rolls[0].PinCount == 10 || frame.Rolls[0].PinCount + knocked == 10);
-            frameComplete = rollNumber == 3 || (rollNumber == 2 && !hasBonus);
-            finished = frameComplete;
-            fullRack = !finished && remaining == 0;
-            if (finished)
-                nextRoll = rollNumber;
+            if (rollNumber == 1)
+            {
+                if (0 == remainingPinCount)
+                {
+                    mark = BowlingRollMark.Strike;
+                }
+                else if (10 == remainingPinCount)
+                {
+                    mark = BowlingRollMark.Miss;
+                }
+                else
+                {
+                    if (IsSplit(standingPinMask))
+                        mark = BowlingRollMark.Split;
+                }
+            }
+            else if (rollNumber == 2)
+            {
+                if (0 == previousRoll.RemainingPinCount)
+                {
+                    if (0 == remainingPinCount)
+                    {
+                        mark = BowlingRollMark.Strike;
+                    }
+                    else if (10 == remainingPinCount)
+                    {
+                        mark = BowlingRollMark.Miss;
+                    }
+                    else
+                    {
+                        if (IsSplit(standingPinMask))
+                            mark = BowlingRollMark.Split;
+                    }
+                }
+                else
+                {
+                    if (0 == remainingPinCount)
+                    {
+                        mark = BowlingRollMark.Spare;
+                    }
+                    else if (previousRoll.RemainingPinCount == remainingPinCount)
+                    {
+                        mark = BowlingRollMark.Miss;
+                    }
+                }
+            }
+            else
+            {
+                if (0 == previousRoll.RemainingPinCount)
+                {
+                    if (0 == remainingPinCount)
+                    {
+                        mark = BowlingRollMark.Strike;
+                    }
+                    else if (10 == remainingPinCount)
+                    {
+                        mark = BowlingRollMark.Miss;
+                    }
+                    else
+                    {
+                        if (IsSplit(standingPinMask))
+                            mark = BowlingRollMark.Split;
+                    }
+                }
+                else
+                {
+                    if (0 == remainingPinCount)
+                    {
+                        mark = BowlingRollMark.Spare;
+                    }
+                    else if (previousRoll.RemainingPinCount == remainingPinCount)
+                    {
+                        mark = BowlingRollMark.Miss;
+                    }
+                }
+            }
         }
 
-        decision = new BowlingRollDecision(frameComplete, finished, fullRack,
-            nextFrame, nextRoll, fullRack ? BowlingLaneBlackboard.FullRackMask : standingPinMask);
+        bool isFrameComplete = frameNumber < 10
+            ? (2 == rollNumber || 0 == remainingPinCount)
+            : (3 == rollNumber ||
+            (2 == rollNumber && 0 != previousRoll.RemainingPinCount && 0 != remainingPinCount));
+        bool isGameFinished = 10 == frameNumber && isFrameComplete;
+        bool shouldResetRack = isGameFinished ? false : (isFrameComplete || 0 == remainingPinCount);
+        int nextFrameNumber = isFrameComplete ? frameNumber + 1 : frameNumber;
+        int nextRollNumber = isGameFinished ? rollNumber : (isFrameComplete ? 1 : rollNumber + 1);
+        ushort nextRollStandingPinMask = isFrameComplete
+            ? BowlingLaneBlackboard.FullRackMask
+            : (10 > frameNumber ? afterPinMask :
+            (shouldResetRack ? BowlingLaneBlackboard.FullRackMask : afterPinMask));
 
+        decision = new BowlingRollDecision(isFrameComplete, isGameFinished, shouldResetRack,
+            Mathf.Min(nextFrameNumber, 10), nextRollNumber, nextRollStandingPinMask);
+
+        // 결정이 채워지기 전에는 경기 기록을 갱신하지 않습니다.
+        if (decision.NextFrameNumber == 0)
+            return false;
+
+        roll = new BowlingRollRecord(frameNumber, rollNumber, beforePinMask, afterPinMask, pinCount, remainingPinCount, mark);
         board.Record(roll, decision);
         RecalculateScores(board);
 
         return true;
     }
 
+    /// <summary>저장된 투구를 읽어 프레임 점수와 확정 여부, 누적 점수를 갱신합니다.</summary>
+    /// <param name="board">점수를 갱신할 경기 기록입니다.</param>
     private void RecalculateScores(BowlingLaneBlackboard board)
     {
-        var flattened = new List<int>(21);
+        var pinCounts = new List<int>();
         foreach (var frame in board.Frames)
         {
             foreach (var roll in frame.Rolls)
-                flattened.Add(roll.PinCount);
+                pinCounts.Add(roll.PinCount);
         }
 
-        int index = 0;
-        int total = 0;
-        bool precedingConfirmed = true;
+        int rollIndex = 0;
         foreach (var frame in board.Frames)
         {
-            int score = 0;
-            bool confirmed = false;
-            if (frame.Rolls.Count > 0)
+            if (frame.IsScoreConfirmed)
             {
-                if (frame.FrameNumber == 10)
+                rollIndex += frame.Rolls.Count;
+                continue;
+            }
+
+            var score = 0;
+
+            if (10 == frame.FrameNumber)
+            {
+                foreach (var roll in frame.Rolls)
+                    score += roll.PinCount;
+
+                if (board.IsFinished)
                 {
-                    confirmed = frame.IsComplete;
-                    foreach (var roll in frame.Rolls)
-                        score += roll.PinCount;
-                }
-                else if (frame.Rolls[0].PinCount == 10)
-                {
-                    confirmed = flattened.Count >= index + 3;
-                    if (confirmed)
-                        score = 10 + flattened[index + 1] + flattened[index + 2];
-                }
-                else if (frame.Rolls.Count == 2)
-                {
-                    score = frame.Rolls[0].PinCount + frame.Rolls[1].PinCount;
-                    confirmed = score != 10 || flattened.Count >= index + 3;
-                    if (score == 10 && confirmed)
-                        score += flattened[index + 2];
+                    frame.Score = score;
+                    frame.IsScoreConfirmed = true;
                 }
             }
-            frame.IsScoreConfirmed = precedingConfirmed && confirmed;
-            frame.Score = confirmed ? score : 0;
+
+            else foreach (var roll in frame.Rolls)
+            {
+                if (roll.Mark == BowlingRollMark.Strike)
+                {
+                    score += 10;
+
+                    if (rollIndex + 2 < pinCounts.Count)
+                    {
+                        score += pinCounts[rollIndex + 1];
+                        score += pinCounts[rollIndex + 2];
+                        frame.Score = score;
+                        frame.IsScoreConfirmed = true;
+                    }
+                }
+                else if (roll.Mark == BowlingRollMark.Spare)
+                {
+                    score += pinCounts[rollIndex];
+
+                    if (rollIndex + 1 < pinCounts.Count)
+                    {
+                        score += pinCounts[rollIndex + 1];
+                        frame.Score = score;
+                        frame.IsScoreConfirmed = true;
+                    }
+                }
+                else
+                {
+                    score += pinCounts[rollIndex];
+
+                    if ((10 > roll.FrameNumber && 2 == roll.RollNumber)
+                        || board.IsFinished)
+                    {
+                        frame.Score = score;
+                        frame.IsScoreConfirmed = true;
+                    }
+                }
+
+                ++rollIndex;
+            }
+
             if (frame.IsScoreConfirmed)
-                total += score;
-            frame.TotalScore = total;
-            precedingConfirmed = frame.IsScoreConfirmed;
-            index += frame.Rolls.Count;
+            {
+                frame.TotalScore = score + (frame.FrameNumber > 1 ? board.Frames[frame.FrameNumber - 2].TotalScore : 0);
+                board.TotalScore = frame.TotalScore;
+            }
         }
-        board.TotalScore = total;
+
+        // TODO: 프레임 점수와 누적 점수 계산을 구현하세요.
     }
 }
 
