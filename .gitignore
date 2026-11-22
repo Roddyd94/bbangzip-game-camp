@@ -1,16 +1,20 @@
 # Unity generated caches and output
-/[Ll]ibrary/
-/[Tt]emp/
-/[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
-/[Ll]ogs/
-/[Uu]ser[Ss]ettings/
-/[Mm]emoryCaptures/
-/[Rr]ecordings/
+/laptime/[Ll]ibrary/
+/laptime/[Tt]emp/
+/laptime/[Oo]bj/
+/laptime/[Bb]uild/
+/laptime/[Bb]uilds/
+/laptime/[Ll]ogs/
+/laptime/[Uu]ser[Ss]ettings/
+/laptime/[Mm]emoryCaptures/
+/laptime/[Rr]ecordings/
+/laptime/[Uu]nity[Rr]ecordings/
+/laptime/[Uu]nity[Rr]ecordings.meta
 
 # Generated IDE projects and local state
 .vs/
+.vscode/
+/laptime/.vsconfig
 .idea/
 *.csproj
 *.sln
@@ -26,9 +30,13 @@
 *.VC.db
 *.csproj.meta
 *.sln.meta
+*.slnx.meta
 *.pidb.meta
 *.pdb.meta
 *.mdb.meta
+
+# Blender autosave backups
+*.blend[0-9]*
 
 # OS files and local secrets
 .DS_Store
